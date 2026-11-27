@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>バスのりば案内</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+:root{--bg:#070a24;--card:#161b6e;--ink:#f4f6ff;--sub:#7fa6ff;--dim:#8f9ad0;--line:#1f2760;--ok:#22e0d6;--warn:#ffe14d;--bad:#ff5a5f;--chip:#22d3ee;--chipink:#06223a;color-scheme:dark;
+ --u:min(1vw,1.7777vh);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:'Zen Kaku Gothic New','Hiragino Sans','Yu Gothic',Meiryo,sans-serif;font-size:calc(var(--u)*1.3)}
+.screen{height:100%;display:grid;grid-template-rows:auto 1fr auto;gap:calc(var(--u)*1.4);padding:calc(var(--u)*1.8) calc(var(--u)*2.4)}
+.sub{color:var(--sub);font-size:calc(var(--u)*1.15)}
+.dim{color:var(--dim)}
+header{display:flex;justify-content:space-between;align-items:flex-end}
+h1{margin:0;font-size:calc(var(--u)*3.8);font-weight:900;line-height:1.05}
+h1 small{font-size:.38em;font-weight:400;color:var(--sub);margin-left:.9em}
+.clock{display:flex;align-items:flex-end;gap:calc(var(--u)*1.6)}
+.clock .meta{text-align:right}
+.clock b{font-size:calc(var(--u)*6.4);font-weight:900;line-height:.95;font-variant-numeric:tabular-nums}
+.live{display:inline-block;width:.55em;height:.55em;border-radius:50%;background:var(--chip);margin-right:.4em}
+.main{display:grid;grid-template-columns:36fr 64fr;gap:calc(var(--u)*2);min-height:0}
+.card{background:var(--card);border-radius:calc(var(--u)*1.1);padding:calc(var(--u)*1.8) calc(var(--u)*1.8) calc(var(--u)*1.6);min-height:0;display:flex;flex-direction:column;justify-content:space-between;gap:calc(var(--u)*1.2)}
+.tgrid{display:grid;grid-template-columns:auto auto;justify-content:start;column-gap:calc(var(--u)*2.8);row-gap:calc(var(--u)*.3);align-items:end}
+.aline{grid-column:1/-1;display:flex;align-items:baseline;gap:calc(var(--u)*1.2);margin-top:calc(var(--u)*.8)}
+.note{color:var(--dim);font-size:calc(var(--u)*1.2);line-height:1.5;border-top:1px solid rgba(255,255,255,.14);padding-top:calc(var(--u)*1.1)}
+.note small{font-size:.85em}
+.grp{display:flex;flex-direction:column;gap:calc(var(--u)*.5)}
+.grp+.grp{border-top:1px solid rgba(255,255,255,.14);padding-top:calc(var(--u)*1.3)}
+h2{margin:0;font-size:calc(var(--u)*1.5);color:var(--chip)}
+h2 small{font-size:.7em;color:var(--sub);font-weight:400;margin-left:.4em}
+.chip{display:inline-block;min-width:2.3em;text-align:center;background:var(--chip);color:var(--chipink);font-weight:900;border-radius:.25em;padding:0 .3em;font-variant-numeric:tabular-nums}
+.gate{background:var(--ink);color:var(--bg)}
+.nd{font-size:calc(var(--u)*2.1);font-weight:900;line-height:1.2}
+.dest{font-size:calc(var(--u)*3);font-weight:900;line-height:1.2}
+.big{font-size:calc(var(--u)*6.2);font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+.big small{font-size:.35em;font-weight:700;color:inherit}
+.row2{display:flex;gap:calc(var(--u)*3.2)}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.stat{font-weight:900}
+.where{background:rgba(7,10,36,.35);border-radius:calc(var(--u)*.8);padding:calc(var(--u)*.8)}
+.track{display:flex;margin:calc(var(--u)*.8) 0 calc(var(--u)*.5)}
+.node{flex:1;text-align:center;font-size:calc(var(--u)*1);position:relative;line-height:1.25}
+.node i{display:block;width:calc(var(--u)*1.4);height:calc(var(--u)*1.4);border-radius:50%;background:#3a45b0;margin:0 auto 4px;position:relative;z-index:1}
+.node:not(:last-child)::before{content:"";position:absolute;top:calc(var(--u)*.6);left:50%;width:100%;height:2px;background:#3a45b0}
+.node.on i{background:var(--warn);box-shadow:0 0 0 calc(var(--u)*.45) rgba(255,225,77,.3)}
+.node.here i{background:#fff}
+.node em{display:block;font-style:normal;font-size:.75em;color:var(--sub)}
+.right{display:grid;grid-template-rows:auto auto 1fr;min-height:0;gap:calc(var(--u)*.4)}
+.hd,.r{display:grid;grid-template-columns:12fr 13fr 11fr 19fr 26fr 19fr;align-items:center;gap:calc(var(--u)*.6)}
+.hd{color:var(--sub);font-size:calc(var(--u)*1.05);line-height:1.1}
+.hd span small{display:block;font-size:.8em}
+.rows{display:grid;grid-auto-rows:1fr;min-height:0}
+.r{border-top:1px solid var(--line);font-size:calc(var(--u)*2.7);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.r .d{overflow:hidden;white-space:normal;line-height:1.15;font-size:.66em}
+.r .d small{font-size:.6em;color:var(--dim);font-weight:400;margin-left:.5em}
+.r .chip{font-size:.62em}
+.r .s{font-weight:700}
+.r .g{font-size:.62em;font-weight:700;line-height:1.15;white-space:normal;overflow:hidden}
+.u{font-size:.5em;font-weight:700;margin-left:.15em;color:inherit}
+.dl{display:flex;align-items:flex-end;gap:calc(var(--u)*1.4)}
+.sch{color:var(--dim);font-size:calc(var(--u)*1.2);line-height:1.2;padding-bottom:calc(var(--u)*.5)}
+.sch b{font-size:calc(var(--u)*2.4);color:var(--ink);font-variant-numeric:tabular-nums}
+.rt{display:flex;flex-wrap:wrap;gap:.18em .25em;align-items:center}
+.rt .chip{font-size:.5em;min-width:2.1em;padding:0 .25em;line-height:1.3}
+.rt.one .chip{font-size:.62em}
+.rtl .chip{font-size:calc(var(--u)*1.8)}
+.yk{font-size:.4em;font-weight:700;margin-left:.4em;color:var(--sub)}
+.r.cx .t,.r.cx .d,.r.cx [data-k="s"]{text-decoration:line-through;opacity:.5}
+footer{display:flex;gap:calc(var(--u)*2.4);color:var(--sub);font-size:calc(var(--u)*1.15)}
+.f{display:inline-block;white-space:pre;backface-visibility:hidden}
+.fl{animation:flap .18s ease-in-out}
+@keyframes flap{0%{transform:perspective(500px) rotateX(0)}49%{transform:perspective(500px) rotateX(-90deg)}51%{transform:perspective(500px) rotateX(90deg)}100%{transform:perspective(500px) rotateX(0)}}
+@media(prefers-reduced-motion:reduce){.fl{animation:none}}
+</style>
+</head>
+<body>
+<div class="screen">
+<header>
+  <div><div class="sub">バスのりば案内 / Bus Departures</div><h1><span id="ttl"></span><small id="ten"></small></h1></div>
+  <div class="clock"><div class="meta"><div class="sub" id="date"></div><div class="sub"><span class="live"></span><span id="upd"></span> 更新 リアルタイム表示中</div></div><b id="clock"></b></div>
+</header>
+<div class="main">
+  <section class="card">
+    <div class="grp"><h2>つぎのバス<small>NEXT BUS</small></h2><div class="nd" id="lstop"></div></div>
+    <div class="grp"><div class="sub">行先 Destination</div><div class="rt rtl" id="lno"></div><div class="dest"><span id="ldest"></span><small class="yk">行き</small></div></div>
+    <div class="grp"><div class="tgrid"><div class="sub">定刻</div><div class="sub" id="ldl">実際の出発 Actual</div><div class="big" id="lsct" style="font-size:calc(var(--u)*4.2)"></div><div class="big" id="ldep" style="font-size:calc(var(--u)*4.2)"></div><div class="aline"><span class="sub">あと In</span><div class="big" id="lmb" style="font-size:calc(var(--u)*4.2)"><span id="lmin"></span><small id="lmu"> 分</small></div></div></div></div>
+    <div class="where"><div class="sub">このバスはいま… Where is the bus?</div><div class="track" id="track"></div><div class="sub" id="lmsg"></div></div>
+  </section>
+  <section class="right">
+    <h2>そのあとのバス<small>LATER BUSES</small></h2>
+    <div class="hd"><span>定刻<small>Scheduled</small></span><span>実際の出発<small>Actual</small></span><span>あと<small>In</small></span><span>系統<small>Route</small></span><span>行先<small>Destination</small></span><span>バス停<small>Stop</small></span></div>
+    <div class="rows" id="rows"></div>
+  </section>
+</div>
+<footer><span class="ok">● 定刻 On time</span><span class="warn">▲ 遅れ Delayed</span><span class="bad">× 運休 Cancelled</span><span>This board updates every minute.</span><span>※ リアルタイムデータは仮の数字です Real-time data is provisional.</span></footer>
+</div>
+<script>
+// ===== 時刻表データ（函館バス「亀田支所前」①〜⑧乗り場。令和8年11月16日現在）=====
+// s=のりば r=系統 d=行先 t=時刻"HHMM"+記号(a=学校休日運休 s=土曜のみ b=土曜のみ・学校休日運休 d=なないろななえ構内経由)
+const STOPS=[{id:'k1',ja:'亀田支所前 ①',en:'Kameda-shishomae 1'},{id:'k2',ja:'亀田支所前 ②',en:'Kameda-shishomae 2'},{id:'k3',ja:'亀田支所前 ③',en:'Kameda-shishomae 3'},{id:'k4',ja:'亀田支所前 ④',en:'Kameda-shishomae 4'},{id:'k5',ja:'亀田支所前 ⑤',en:'Kameda-shishomae 5'},{id:'k6',ja:'亀田支所前 ⑥',en:'Kameda-shishomae 6'},{id:'k7',ja:'亀田支所前 ⑦',en:'Kameda-shishomae 7'},{id:'k8',ja:'亀田支所前 ⑧',en:'Kameda-shishomae 8'},{id:'c1',ja:'亀田中学校前（亀中側）',en:'Kameda Chugakko-mae'},{id:'c2',ja:'亀田中学校前（STV側）',en:'Kameda Chugakko-mae STV'},{id:'f1',ja:'附属中学校前',en:'Fuzoku Chugakko-mae'}];
+const TT={"平日":[{"s":"k1","r":["30"],"d":"新函館北斗駅","t":["0743","1011","1434","1543","1715","1821"]},{"s":"k1","r":["30A"],"d":"新函館北斗駅","t":["0810","1117","1305"]},{"s":"k1","r":["51","51A"],"d":"昭和ターミナル","t":["0834","0928","1700","1754","1858","2001"]},{"s":"k1","r":["53"],"d":"蔦屋書店前・桔梗町418番地","t":["1112","1232","1412","1542","1712"]},{"s":"k1","r":["55A"],"d":"赤川","t":["0805","0836","0953","1012","1154","1823","1927","2017"]},{"s":"k1","r":["55C"],"d":"赤川","t":["1630"]},{"s":"k1","r":["55F"],"d":"赤川","t":["1748"]},{"s":"k1","r":["55G"],"d":"赤川","t":["0808","1106","1315","1423","1604"]},{"s":"k1","r":["73"],"d":"ななえ新病院","t":["0728"]},{"s":"k1","r":["73A"],"d":"ななえ新病院","t":["1636"]},{"s":"k2","r":["7E"],"d":"函館空港","t":["0734","0841","0941","1246","1934"]},{"s":"k2","r":["7F"],"d":"函館空港","t":["1046","1146","1346","1446","1706","1746","1839"]},{"s":"k2","r":["19","25","30","30A","33","33A","33B"],"d":"函館駅前・函館バスセンター","t":["0725","0731","0743","0802","0805","0855","0905","0924","0935","0940","0958","1035","1045","1107","1217","1224","1317","1333","1357","1457","1513","1516","1602","1640","1658","1740","1751","1844","1912","1937"]},{"s":"k2","r":["51","51B"],"d":"函館駅前","t":["0700","0727","0825","0905","1816"]},{"s":"k2","r":["55"],"d":"函館駅前","t":["0732","0847"]},{"s":"k2","r":["55A"],"d":"函館駅前","t":["0919","1647","1755","1901"]},{"s":"k2","r":["55E"],"d":"函館駅前・西高校前","t":["0715"]},{"s":"k2","r":["51A"],"d":"千代台","t":["1705"]},{"s":"k2","r":["55F"],"d":"千代台","t":["0650","1617","1831","2008"]},{"s":"k2","r":["53"],"d":"谷地頭温泉","t":["0930","1050","1230","1400","1530"]},{"s":"k2","r":["78"],"d":"昭和ターミナル","t":["1548"]},{"s":"k3","r":["72"],"d":"市立函館病院","t":["0723","0910","1035","1253","1340","1527a","1600","1725","1904"]},{"s":"k3","r":["74"],"d":"函館駅前","t":["0931","1421"]},{"s":"k4","r":["7A"],"d":"函館空港","t":["1314","1730","1857"]},{"s":"k4","r":["7B"],"d":"函館空港","t":["0803","0905","1006","1106","1425","1531","1610"]},{"s":"k4","r":["76B"],"d":"旭岡中学校前","t":["1224","1841"]},{"s":"k4","r":["72"],"d":"日吉営業所前","t":["0757","1005","1130","1237","1457","1622","1751"]},{"s":"k4","r":["74"],"d":"日吉営業所前","t":["0808","1039","1529"]},{"s":"k4","r":["73","73A","76"],"d":"函館大学前","t":["0737a","0741a","1556a","1815"]},{"s":"k4","r":["85A"],"d":"函館駅前","t":["0951","1051","1151","1251","1351","1451","1551"]},{"s":"k5","r":["11","19"],"d":"富川会館前","t":["0741","0923","1209","1354","1607","1815","1924"]},{"s":"k5","r":["13A"],"d":"久根別","t":["1709a"]},{"s":"k5","r":["25"],"d":"新函館北斗駅","t":["1229","1434","1604","1934"]},{"s":"k5","r":["33","33F"],"d":"新函館北斗駅","t":["0930","1140","1220","1312","1420","1520","1611","1705","1912"]},{"s":"k5","r":["33B"],"d":"新函館北斗駅","t":["1843"]},{"s":"k5","r":["33C"],"d":"新函館北斗駅","t":["0729"]},{"s":"k5","r":["67"],"d":"函館駅前","t":["0804","0827","0918","0953","1108","1133","1248","1328","1403","1445","1550","1702","1817","1902","1945"]},{"s":"k5","r":["68"],"d":"千代台","t":["0727","0748"]},{"s":"k5","r":["70A"],"d":"函館高等支援学校","t":["0756"],"da":"昭和ターミナル"},{"s":"k5","r":["21","55G","67A","70","76","76B"],"d":"昭和ターミナル","t":["0736","0818a","0823a","0843","0922","1053","1235","1351","1356","1504","1711","1904","2008","2015","2053","2059"]},{"s":"k5","r":["85A"],"d":"昭和ターミナル","t":["0911","0956","1029","1118","1218","1318","1418","1518","1618"]},{"s":"k6","r":["7E"],"d":"函館空港","t":["0739","0846","0946","1251","1939"]},{"s":"k6","r":["7F"],"d":"函館空港","t":["1051","1151","1351","1451","1711","1751","1844"]},{"s":"k6","r":["19","25","30","33"],"d":"函館駅前・函館バスセンター","t":["0730","0736","0748","0807","0810","0900","0910","0929","0940","0945","1003","1040","1050","1112","1222","1229","1322","1338","1402","1502","1518","1521","1607","1645","1703","1745","1756","1848","1916","1942"]},{"s":"k6","r":["51","51B","55","55A","55B"],"d":"函館駅前","t":["0705","0732","0737","0830","0852","0910","0924","1652","1800","1821","1906"]},{"s":"k6","r":["55E"],"d":"函館駅前・西高校前","t":["0720"]},{"s":"k6","r":["33E"],"d":"中部高校裏","t":["0723a"]},{"s":"k6","r":["51A","55F"],"d":"千代台","t":["0654","1622","1710","1836","2012"]},{"s":"k6","r":["53"],"d":"谷地頭温泉","t":["0934","1054","1234","1404","1534"]},{"s":"k6","r":["78"],"d":"昭和ターミナル","t":["1553"]},{"s":"k7","r":["7A","7B"],"d":"函館空港","t":["0807","0909","1010","1110","1318","1429","1535","1614","1734","1901"]},{"s":"k7","r":["11","71","73","76"],"d":"函館大学前","t":["0720a","0741a","0744","0745a","1559a","1819"]},{"s":"k7","r":["13"],"d":"工業高校前","t":["0736a"]},{"s":"k7","r":["21"],"d":"新函館北斗駅","t":["1533"]},{"s":"k7","r":["76B"],"d":"旭岡中学校前","t":["1227","1844"]},{"s":"k7","r":["47","67A","67B"],"d":"函館駅前","t":["0651","0740","0810","0855","0930","1017","1042","1132","1157","1302","1331","1402","1427","1517","1542","1602","1649","1718","1744","1824","1854"]},{"s":"k7","r":["85A"],"d":"函館駅前","t":["0954","1054","1154","1254","1354","1454","1554"]},{"s":"k7","r":["72"],"d":"日吉営業所前","t":["0801","1009","1134","1241","1501","1626","1755"]},{"s":"k7","r":["74"],"d":"日吉営業所前","t":["0812","1043","1533"]},{"s":"k8","r":["30"],"d":"新函館北斗駅","t":["0747","1015","1438","1547","1719","1825"]},{"s":"k8","r":["30A"],"d":"新函館北斗駅","t":["0814","1121","1309"]},{"s":"k8","r":["51","51A"],"d":"昭和ターミナル","t":["0838","0932","1704","1758","1902","2005"]},{"s":"k8","r":["53"],"d":"蔦屋書店前・桔梗町418番地","t":["1116","1236","1416","1546","1716"]},{"s":"k8","r":["55A","55C","55F","55G","55H"],"d":"赤川","t":["0809","0812","0840","0957","1016","1110","1158","1319","1427","1608","1634","1752","1827","1931","2020"]},{"s":"k8","r":["73"],"d":"ななえ新病院","t":["0732"]},{"s":"k8","r":["73A"],"d":"ななえ新病院","t":["1640"]},{"s":"c1","r":["11","71","76"],"d":"函館大学前","t":["0718a","0742","1552a"]},{"s":"c1","r":["13"],"d":"工業高校前","t":["0734a"]},{"s":"c1","r":["21"],"d":"新函館北斗駅","t":["1531"]},{"s":"c1","r":["19","25","33"],"d":"函館駅前バスセンター","t":["0721","0727","0758","0801","0851","0901","0920","0931","0954","1041","1103","1220","1313","1353","1509","1512","1558","1654","1747","1840","1933"]},{"s":"c1","r":["33E"],"d":"中部高校裏","t":["0721a"]},{"s":"c1","r":["55G"],"d":"赤川","t":["0804","1102","1311","1419","1600"]},{"s":"c1","r":["47","67A","67B"],"d":"函館駅前","t":["0650","0738","0808","0853","0928","1015","1040","1130","1155","1300","1329","1400","1425","1515","1540","1600","1647","1716","1742","1822","1852"]},{"s":"c1","r":["72"],"d":"日吉営業所","t":["0753","1001","1126","1233","1453","1618","1747"]},{"s":"c1","r":["74"],"d":"日吉営業所","t":["0805","1036","1526"]},{"s":"c1","r":["76B"],"d":"旭岡中学校前","t":["1220","1837"]},{"s":"c1","r":["85A"],"d":"函館駅前","t":["0948","1048","1148","1248","1348","1448","1548"]},{"s":"c2","r":["11","19"],"d":"富川会館","t":["0743","0925","1211","1356","1609","1817","1926"]},{"s":"c2","r":["13A"],"d":"久根別","t":["1711a"]},{"s":"c2","r":["25"],"d":"新函館北斗駅","t":["1231","1436","1606","1936"]},{"s":"c2","r":["33","33F"],"d":"新函館北斗駅","t":["0932","1142","1222","1314","1422","1522","1613","1707","1914"]},{"s":"c2","r":["33B"],"d":"新函館北斗駅","t":["1845"]},{"s":"c2","r":["33C"],"d":"新函館北斗駅","t":["0731"]},{"s":"c2","r":["21","55G","61A","67A","70","76","76B"],"d":"昭和ターミナル","t":["0738","0820a","0825a","0845","0924","1055","1237","1353","1358","1506","1713","1906","2010","2017","2055","2101"]},{"s":"c2","r":["85A"],"d":"昭和ターミナル","t":["0913","0958","1031","1120","1220","1320","1420","1520","1620"]},{"s":"c2","r":["68"],"d":"千代台","t":["0729","0750"]},{"s":"c2","r":["67"],"d":"函館駅前","t":["0806","0829","0920","0955","1110","1135","1250","1330","1405","1447","1552","1704","1819","1904","1947"]},{"s":"c2","r":["74"],"d":"函館駅前","t":["0934","1424"]},{"s":"c2","r":["70A"],"d":"函館高等支援学校","t":["0758"],"da":"昭和ターミナル"},{"s":"c2","r":["72"],"d":"函館病院","t":["0726","0913","1038","1256","1343","1530a","1603","1728","1907"]},{"s":"f1","r":["30"],"d":"函館駅前・函館バスセンター","t":["0736","0933","1028","1210","1326","1450","1633","1733","1905"]},{"s":"f1","r":["51","51B"],"d":"函館駅前","t":["0653","0720","0818","0858","1809"]},{"s":"f1","r":["51A"],"d":"千代台","t":["1658"]},{"s":"f1","r":["53"],"d":"谷地頭温泉","t":["0923","1043","1223","1353","1523"]},{"s":"f1","r":["73"],"d":"函館大学前","t":["0730a","0734a","1808"]}],"土日祝":[{"s":"k1","r":["30"],"d":"新函館北斗駅","t":["0743","1011","1543","1715","1821"]},{"s":"k1","r":["30A"],"d":"新函館北斗駅","t":["1117","1305"]},{"s":"k1","r":["51","51A"],"d":"昭和ターミナル","t":["1926","2036"]},{"s":"k1","r":["53"],"d":"蔦屋書店前・桔梗町418番地","t":["1112","1232","1412","1542","1712"]},{"s":"k1","r":["55A"],"d":"赤川","t":["0826","1609","1705","1757"]},{"s":"k1","r":["55F"],"d":"赤川","t":["1857"]},{"s":"k1","r":["55H"],"d":"赤川","t":["0919","1139","1227","1508"]},{"s":"k1","r":["73"],"d":"ななえ新病院","t":["0728b"]},{"s":"k2","r":["7E"],"d":"函館空港","t":["0809","1246"]},{"s":"k2","r":["7F"],"d":"函館空港","t":["1004","1104","1146","1346","1506","1649","1739","1839"]},{"s":"k2","r":["19","25","30","30A","33","33A","33B"],"d":"函館駅前・函館バスセンター","t":["0743s","0752","0802","0855b","0857","0914","0935","0940","1107","1113","1217","1224","1317","1318","1333","1409","1418","1457","1529","1602","1618","1659","1740","1752","1912","1922","1952"]},{"s":"k2","r":["51","51B"],"d":"函館駅前","t":["0716","0827","1553"]},{"s":"k2","r":["55"],"d":"函館駅前","t":["0715","0903"]},{"s":"k2","r":["55A"],"d":"函館駅前","t":["0959","1458","1548","1646","1817"]},{"s":"k2","r":["51A"],"d":"千代台","t":["1816"]},{"s":"k2","r":["53"],"d":"谷地頭温泉","t":["0930","1050","1230","1400","1530"]},{"s":"k3","r":["72"],"d":"市立函館病院","t":["0715","1001","1110","1231","1325","1550","1740"]},{"s":"k3","r":["74"],"d":"函館駅前","t":["0911"]},{"s":"k4","r":["7A"],"d":"函館空港","t":["1324","1424","1709","1811"]},{"s":"k4","r":["7B"],"d":"函館空港","t":["0828","1022","1113","1214","1542"]},{"s":"k4","r":["76B"],"d":"旭岡中学校前","t":["1757","1940"]},{"s":"k4","r":["72"],"d":"日吉営業所前","t":["0810","1007","1056","1222","1447","1627","1835"]},{"s":"k4","r":["74"],"d":"日吉営業所前","t":["0808","1019"]},{"s":"k4","r":["73","73A","76"],"d":"函館大学前","t":["0741b"]},{"s":"k4","r":["85A"],"d":"函館駅前","t":["1050","1150","1250","1435"]},{"s":"k5","r":["11","19"],"d":"富川会館前","t":["0736","0952","1157","1257","1457","1924"]},{"s":"k5","r":["25"],"d":"新函館北斗駅","t":["1229","1434","1604","1934"]},{"s":"k5","r":["33","33F"],"d":"新函館北斗駅","t":["0930","1138d","1310d","1420","1520","1613","1731","1905"]},{"s":"k5","r":["67"],"d":"函館駅前","t":["0752","0825","0918","0953","1108","1213","1420","1520","1600","1645","1731","1854"]},{"s":"k5","r":["21","55G","67A","70","76","76B"],"d":"昭和ターミナル","t":["0756","0818b","0843b","1328","1811","1924","2015","2106"]},{"s":"k5","r":["85A"],"d":"昭和ターミナル","t":["0942","1028","1217","1317","1417","1602"]},{"s":"k6","r":["7E"],"d":"函館空港","t":["0814","1251"]},{"s":"k6","r":["7F"],"d":"函館空港","t":["1009","1109","1151","1351","1511","1654","1744","1844"]},{"s":"k6","r":["19","25","30","33"],"d":"函館駅前・函館バスセンター","t":["0748s","0756","0806","0859b","0901","0918","0940","0945","1111","1117","1222","1228","1321","1322","1338","1413","1422","1502","1533","1606","1622","1703","1745","1756","1916","1926","1956"]},{"s":"k6","r":["51","51B","55","55A","55B"],"d":"函館駅前","t":["0719","0721","0832","0907","1003","1502","1552","1558","1650","1821"]},{"s":"k6","r":["51A","55F"],"d":"千代台","t":["1821"]},{"s":"k6","r":["53"],"d":"谷地頭温泉","t":["0934","1054","1234","1404","1534"]},{"s":"k7","r":["7A","7B"],"d":"函館空港","t":["0832","1026","1117","1218","1328","1428","1546","1713","1815"]},{"s":"k7","r":["11","71","73","76"],"d":"函館大学前","t":["0744b","0745b"]},{"s":"k7","r":["76B"],"d":"旭岡中学校前","t":["1800","1943"]},{"s":"k7","r":["47","67A","67B"],"d":"函館駅前","t":["0651","0810","0938","1111","1156","1301","1401","1620","1720","1824"]},{"s":"k7","r":["85A"],"d":"函館駅前","t":["1053","1153","1253","1438"]},{"s":"k7","r":["48"],"d":"千代台","t":["1957"]},{"s":"k7","r":["72"],"d":"日吉営業所前","t":["0814","1011","1100","1226","1451","1631","1839"]},{"s":"k7","r":["74"],"d":"日吉営業所前","t":["0812","1023"]},{"s":"k8","r":["30"],"d":"新函館北斗駅","t":["0747","1015","1547","1719","1825"]},{"s":"k8","r":["30A"],"d":"新函館北斗駅","t":["1121","1309"]},{"s":"k8","r":["51","51A"],"d":"昭和ターミナル","t":["1930","2040"]},{"s":"k8","r":["53"],"d":"蔦屋書店前・桔梗町418番地","t":["1116","1236","1416","1546","1716"]},{"s":"k8","r":["55A","55C","55F","55G","55H"],"d":"赤川","t":["0830","0923","1143","1231","1512","1613","1709","1801","1901"]},{"s":"k8","r":["73"],"d":"ななえ新病院","t":["0732b"]},{"s":"c1","r":["11","71","76"],"d":"函館大学前","t":["0742b"]},{"s":"c1","r":["19","25","33"],"d":"函館駅前バスセンター","t":["0748","0758","0851b","0853","0910","0931","1103","1109","1220","1313","1314","1405","1414","1525","1558","1614","1655","1748","1918","1948"]},{"s":"c1","r":["47","67A","67B"],"d":"函館駅前","t":["0650","0808","0936","1109","1154","1259","1359","1618","1718","1822"]},{"s":"c1","r":["48"],"d":"千代台","t":["1955"]},{"s":"c1","r":["72"],"d":"日吉営業所","t":["0806","1003","1052","1218","1443","1623","1831"]},{"s":"c1","r":["74"],"d":"日吉営業所","t":["0805","1016"]},{"s":"c1","r":["76B"],"d":"旭岡中学校前","t":["1753","1936"]},{"s":"c1","r":["85A"],"d":"函館駅前","t":["1046","1146","1246","1431"]},{"s":"c2","r":["11","19"],"d":"富川会館","t":["0738","0954","1159","1259","1459","1926"]},{"s":"c2","r":["25"],"d":"新函館北斗駅","t":["1231","1436","1606","1936"]},{"s":"c2","r":["33","33F"],"d":"新函館北斗駅","t":["0932","1140d","1312d","1422","1522","1615","1733","1907"]},{"s":"c2","r":["21","55G","61A","67A","70","76","76B"],"d":"昭和ターミナル","t":["0758","0820b","0845b","1330","1813","1926","2017","2108"]},{"s":"c2","r":["85A"],"d":"昭和ターミナル","t":["0944","1030","1219","1319","1419","1604"]},{"s":"c2","r":["67"],"d":"函館駅前","t":["0754","0827","0920","0955","1110","1215","1422","1522","1602","1647","1733","1856"]},{"s":"c2","r":["74"],"d":"函館駅前","t":["0914"]},{"s":"c2","r":["72"],"d":"函館病院","t":["0718","1004","1113","1234","1328","1553","1743"]},{"s":"f1","r":["30"],"d":"函館駅前・函館バスセンター","t":["0736s","0933","1210","1326","1450","1733","1905"]},{"s":"f1","r":["51","51B"],"d":"函館駅前","t":["0709","0820","1546"]},{"s":"f1","r":["51A"],"d":"千代台","t":["1809"]},{"s":"f1","r":["53"],"d":"谷地頭温泉","t":["0923","1043","1223","1353","1523"]},{"s":"f1","r":["73"],"d":"函館大学前","t":["0734b"]}]};
+// ===== カレンダー設定（必要に応じて編集）=====
+const HOLIDAYS=['2026-11-23','2027-01-01','2027-01-11','2027-02-11','2027-02-23','2027-03-22','2027-04-29','2027-05-03','2027-05-04','2027-05-05','2027-07-19','2027-08-11','2027-09-20','2027-09-23','2027-10-11','2027-11-03','2027-11-23']; // 祝日
+const SCHOOL_HOLIDAYS=[]; // 学校休日 例: ['2026-12-25','2026-12-26'] （冬休み・春休みなど。範囲は ['2026-12-25','2027-01-07'] のように書ける）
+const DEMO=false; // true にすると遅れ・運休を仮に表示（確認用）
+const LIVE={}; // 実際の遅れ・運休: {'67-1948':{delay:4}, '72-2005':{cancel:true}} の形で後から追加
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const inList=(l,k)=>l.some(x=>Array.isArray(x)?(k>=x[0]&&k<=x[1]):x===k);
+function hash(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%100003;return h}
+function fetchDepartures(now){
+  const k=ymd(now),dow=now.getDay(),hol=inList(HOLIDAYS,k),sch=inList(SCHOOL_HOLIDAYS,k);
+  const sat=dow===6&&!hol,table=(dow===0||dow===6||hol)?'土日祝':'平日';
+  const nowMin=now.getHours()*60+now.getMinutes(),out=[];
+  for(const sv of TT[table]){
+    
+    for(const tk of sv.t){
+      const f=tk.slice(4),t=+tk.slice(0,2)*60+ +tk.slice(2,4);
+      if(f==='s'&&!sat) continue;            // ◎土曜のみ（祕日の土曜は運休。学校休日の土曜は運行）
+      if(f==='b'&&!(sat&&!sch)) continue;   // 土曜のみ（学校休日の土曜は運休）
+      if(f==='a'&&sch) continue;            // 学校休日運休
+      const key=sv.r[0]+'-'+tk.slice(0,4);let delay=0,cancel=false;
+      const L=LIVE[key];if(L){delay=L.delay||0;cancel=!!L.cancel}
+      else if(DEMO){const h=hash(key);if(h%29===0)cancel=true;else if(h%9===0)delay=3+h%4}
+      if(t+delay<nowMin+1||t>nowMin+240) continue;
+      out.push({sid:sv.s,rt:sv.r,ja:(sch&&sv.da)||sv.d,via:sv.v,prev:[0,1,2,3],sched:t,eff:t+delay,delay,cancel});
+    }
+  }
+  return out.sort((a,b)=>a.eff-b.eff||a.sched-b.sched);
+}
+// ===== 表示：1分ごとにパタパタ（スプリットフラップ風）更新 =====
+const $=id=>document.getElementById(id);
+const hm=m=>String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+const stopOf=id=>STOPS.find(s=>s.id===id);
+const ROWS=7;
+const still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function flip(s,ch,delay){
+  const n=/\d/.test(ch)?3:1;let k=0;
+  const step=()=>{s.classList.remove('fl');void s.offsetWidth;s.classList.add('fl');
+    setTimeout(()=>{k++;s.textContent=k<n?'0123456789'[Math.random()*10|0]:ch;if(k<n)step()},90)};
+  setTimeout(step,delay);
+}
+function setFlap(el,text){
+  text=String(text);if(el._t===text)return;
+  const old=[...(el._t||'')],nw=[...text];el._t=text;el.textContent='';
+  nw.forEach((ch,i)=>{const s=document.createElement('span');s.className='f';const o=old[i]??' ';
+    s.textContent=(still||o===ch)?ch:o;el.appendChild(s);if(!still&&o!==ch)flip(s,ch,i*45)});
+}
+function setRoutes(el,arr){
+  const k=arr.join(' ');if(el._k===k)return;el._k=k;el.textContent='';
+  arr.forEach(r=>{const c=document.createElement('span');c.className='chip';el.appendChild(c);setFlap(c,r)});
+  if(el.dataset.k)el.classList.toggle('one',arr.length===1);
+}
+function status(d){
+  if(d.cancel)return['bad','× 運休 Cancelled'];
+  if(d.left<=1)return['ok','まもなく発車'];
+  if(d.delay)return['warn',`▲ ${d.delay}分遅れ Late`];
+  return['ok','● 定刻 On time'];
+}
+// 固定の枠を最初に1回だけ作る
+$('track').innerHTML=[0,1,2,3].map(i=>`<div class="node"><i></i>${4-i}つ前</div>`).join('')+'<div class="node here"><i></i>ここ<em>This stop</em></div>';
+$('rows').innerHTML=Array.from({length:ROWS},(_,i)=>`<div class="r" id="r${i}"><span class="t" data-k="t"></span><span class="s" data-k="s"></span><span><span data-k="m"></span><small class="u">分</small></span><span class="rt" data-k="no"></span><span class="d"><span data-k="d"></span><small>行き</small></span><span class="g" data-k="g"></span></div>`).join('');
+const q=(row,k)=>row.querySelector(`[data-k="${k}"]`);
+function render(){
+  const now=new Date();const nowMin=now.getHours()*60+now.getMinutes();
+  setFlap($('date'),`${now.getMonth()+1}月${now.getDate()}日(${'日月火水木金土'[now.getDay()]})`);
+  setFlap($('upd'),hm(nowMin));setFlap($('clock'),hm(nowMin));
+  const all=fetchDepartures(now).map(d=>({...d,left:d.eff-nowMin}));
+  const n=all.find(d=>!d.cancel)||all[0];
+  const st=n?stopOf(n.sid):STOPS[0];
+  setFlap($('ttl'),'バス運行状況');setFlap($('ten'),'All stops');
+  if(n){
+    const [c,t]=status(n);
+    setRoutes($('lno'),n.rt);setFlap($('ldest'),n.ja);$('ldest').nextElementSibling.hidden=false;setFlap($('lstop'),st.ja+' のりば');
+    setFlap($('ldep'),hm(n.eff));setFlap($('lmin'),n.cancel?'—':String(Math.max(n.left,0)));$('lmu').hidden=n.cancel;$('ldep').className='big '+c;$('lmb').className='big '+c;$('ldl').classList.toggle('warn',!!n.delay&&!n.cancel);setFlap($('lsct'),hm(n.sched));const pos=Math.max(0,3-Math.floor(n.left/3));setFlap($('lmsg'),n.cancel?'このバスは運休です。':n.left<=1?'まもな到着します。':`バスは${4-pos}つ前のバス停のあたりです。`);
+          }else{
+    setRoutes($('lno'),[]);['ldep','lmin','lmsg'].forEach(i=>setFlap($(i),''));setFlap($('lsct'),'');setFlap($('ldest'),'本日の運行は終了しました');$('ldest').nextElementSibling.hidden=true;setFlap($('lstop'),'');
+  }
+  const list=all.filter(d=>d!==n).slice(0,ROWS);
+  for(let i=0;i<ROWS;i++){
+    const row=$('r'+i),d=list[i];
+    if(!d){row.style.visibility='hidden';continue}
+    row.style.visibility='';row.classList.toggle('cx',d.cancel);
+    const [c,t]=status(d);
+    setFlap(q(row,'t'),hm(d.sched));setRoutes(q(row,'no'),d.rt);setFlap(q(row,'d'),d.ja);
+    setFlap(q(row,'g'),stopOf(d.sid).ja);setFlap(q(row,'m'),d.cancel?'—':String(Math.max(d.left,0)));q(row,'m').nextElementSibling.hidden=d.cancel;q(row,'m').parentElement.className=c;
+    setFlap(q(row,'s'),hm(d.eff));q(row,'s').className='s '+c;
+  }
+}
+// 毎分0秒ちょうどに更新
+function tick(){render();setTimeout(tick,60000-Date.now()%60000+100)}
+tick();
+</script>
+</body>
+</html>
